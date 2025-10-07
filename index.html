@@ -341,8 +341,8 @@
                 const monthlyData = [];
                 for (let i = firstMonthIndex; i < columnLimit; i++) { 
                     const month = rawHeaders[i];
-                    const incomeString = grandTotalIncomeRow[i] || '0';
-                    const expenseString = grandTotalExpenseRow[i] || '0';
+                    const incomeString = grandTotalIncomeRow[i+2] || '0';
+                    const expenseString = grandTotalExpenseRow[i+2] || '0';
                     const incomeAmount = parseAmount(incomeString);
                     const expenseAmount = parseAmount(expenseString); 
                     const monthlyBalance = incomeAmount - expenseAmount;
@@ -452,14 +452,14 @@
                     if (values.length < 3) continue;
                     const tipo = cleanTextForComparison(values[0]);
                     const subcat = cleanTextForComparison(values[1]);
-                    if (values[1].trim().toUpperCase() === "RENTABILIDAD") break;
+                    if (values[0].trim().toUpperCase() === "RENTABILIDAD") break;
                     if (subcat.includes('total')) continue;
                     if (tipo.includes('ingresos') && !tipo.includes('gastos')) mode = 'ingresos';
                     else if (tipo.includes('gastos')) mode = 'gastos';
                     if (mode !== 'ingresos' && mode !== 'gastos') continue;
                     const nombreCategoria = values[1] || "(Sin nombre)";
                     // CORREGIDO: para cada mes, coge el dato exacto de esa columna
-                    let datosFila = monthIndices.map(j => parseAmount(values[j] || '0'));
+                    let datosFila = monthIndices.map(j => parseAmount(values[j+2] || '0'));
                     if (mode === 'ingresos') incomeCategories[nombreCategoria] = datosFila;
                     if (mode === 'gastos') expenseCategories[nombreCategoria] = datosFila;
                 }
