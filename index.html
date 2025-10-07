@@ -18,21 +18,19 @@
         }
     </script>
     <style>
-        /* Estilos personalizados para la tipografía y el scroll */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f7f9fb;
         }
-        /* Estilo para la barra de desplazamiento de la tabla */
         #transaction-list-body::-webkit-scrollbar {
             width: 8px;
         }
         #transaction-list-body::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1; /* gray-400 */
+            background-color: #cbd5e1;
             border-radius: 10px;
         }
         #transaction-list-body::-webkit-scrollbar-track {
-            background: #f1f5f9; /* gray-100 */
+            background: #f1f5f9;
         }
         .loading-animation {
             border: 4px solid #f3f3f3;
@@ -56,25 +54,44 @@
         </header>
 
         <!-- Sección de Resumen (Dashboard) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+
+            <!-- Card de Saldo Neto -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
+                <p class="text-sm font-medium text-gray-500 uppercase">Balance Neto</p>
+                <p id="net-balance" class="text-3xl font-bold text-blue-600 mt-1">Cargando...</p>
+            </div>
 
             <!-- Card de Ingresos -->
             <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500">
-                <p class="text-sm font-medium text-gray-500 uppercase">Ingresos Totales (General)</p>
+                <p class="text-sm font-medium text-gray-500 uppercase">Ingresos Totales</p>
                 <p id="total-income" class="text-3xl font-bold text-green-600 mt-1">Cargando...</p>
             </div>
 
             <!-- Card de Gastos -->
             <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-red-500">
-                <p class="text-sm font-medium text-gray-500 uppercase">Gastos Totales (General)</p>
+                <p class="text-sm font-medium text-gray-500 uppercase">Gastos Totales</p>
                 <p id="total-expense" class="text-3xl font-bold text-red-600 mt-1">Cargando...</p>
             </div>
 
-            <!-- Card de Saldo Neto -->
-            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
-                <p class="text-sm font-medium text-gray-500 uppercase">Balance Neto (General)</p>
-                <p id="net-balance" class="text-3xl font-bold text-blue-600 mt-1">Cargando...</p>
+            <!-- Card de Balance Promedio -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-purple-500">
+                <p class="text-sm font-medium text-gray-500 uppercase">Balance Promedio</p>
+                <p id="avg-balance" class="text-3xl font-bold text-purple-600 mt-1">Cargando...</p>
             </div>
+
+            <!-- Card de Ingreso Promedio -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-emerald-500">
+                <p class="text-sm font-medium text-gray-500 uppercase">Ingreso Promedio</p>
+                <p id="avg-income" class="text-3xl font-bold text-emerald-600 mt-1">Cargando...</p>
+            </div>
+
+            <!-- Card de Gasto Promedio -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-orange-500">
+                <p class="text-sm font-medium text-gray-500 uppercase">Gasto Promedio</p>
+                <p id="avg-expense" class="text-3xl font-bold text-orange-600 mt-1">Cargando...</p>
+            </div>
+
         </div>
 
         <!-- Alerta de Carga -->
@@ -98,10 +115,10 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50 sticky top-0">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-xl">Mes / Periodo</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-xl">Mes</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ingresos</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Gastos</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-xl">Balance Mensual</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-xl">Gastos</th>
                             </tr>
                         </thead>
                         <tbody id="transaction-table-body" class="bg-white divide-y divide-gray-200">
@@ -117,21 +134,14 @@
         // URL del TSV proporcionado por el usuario
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRngsRNO6xjSCJfcbsKYlRlhl0JIj4wChXPWOBh7afvBReIq0rBlFIWKKyh5vAvuw/pub?gid=879261942&single=true&output=tsv';
 
-        // Nombres de meses limpios para la detección dinámica de la columna de inicio.
         const MONTH_NAMES = [
-            'ene', 'feb', 'mar', 'abr', 'may', 'jun', 
+            'ene', 'feb', 'mar', 'abr', 'may', 'jun',
             'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
-            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 
+            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
             'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
         ];
 
-        /**
-         * Función para formatear un número a moneda (Euro).
-         * @param {number} amount - El monto a formatear.
-         * @returns {string} El monto formateado como cadena de texto.
-         */
         function formatCurrency(amount) {
-            // Usamos 'es-ES' y 'EUR' para el formato Euro.
             return new Intl.NumberFormat('es-ES', {
                 style: 'currency',
                 currency: 'EUR', 
@@ -139,157 +149,111 @@
             }).format(amount);
         }
 
-        /**
-         * Limpia el texto para comparaciones, eliminando comillas, caracteres no deseados
-         * y normalizando el espacio. Esto hace que la búsqueda sea más robusta.
-         * @param {string} text - El texto a limpiar.
-         * @returns {string} El texto limpio, en minúsculas y con espacios normalizados.
-         */
         function cleanTextForComparison(text) {
             if (typeof text !== 'string') return '';
-            // 1. Eliminar comillas y espacios en los extremos
             let cleaned = text.trim().replace(/^"|"$/g, '').toLowerCase();
-            // 2. Eliminar caracteres no alfanuméricos (excepto espacios, que se limpian después)
-            // Se mantienen áéíóúüñ
             cleaned = cleaned.replace(/[^a-z0-9áéíóúüñ\s]/g, '');
-            // 3. Reemplazar múltiples espacios/tabulaciones por un solo espacio y trim final
             return cleaned.replace(/\s+/g, ' ').trim();
         }
 
-        /**
-         * Intenta determinar el delimitador del archivo (tabulador, coma o punto y coma).
-         * @param {string} text - El texto completo.
-         * @returns {string} El delimitador encontrado.
-         */
         function detectDelimiter(text) {
             const lines = text.split('\n');
-            if (lines.length === 0) return '\t'; // Default a tabulador para TSV
+            if (lines.length === 0) return '\t';
             const firstLine = lines[0]; 
-            
             if (firstLine.includes('\t')) return '\t';
-
             const commaCount = (firstLine.match(/,/g) || []).length;
             const semicolonCount = (firstLine.match(/;/g) || []).length;
-            
             return semicolonCount > commaCount ? ';' : ',';
         }
 
-        /**
-         * Parsea una cadena de monto, limpiando separadores de miles y detectando el decimal.
-         *
-         * @param {string} amountString - La cadena del monto.
-         * @returns {number} El monto parseado como número.
-         */
         function parseAmount(amountString) {
             let cleanAmountString = amountString.trim().replace(/"/g, '');
-            
-            // 0. Reforzado: Eliminar caracteres que no sean dígito, punto, coma, guion o paréntesis.
             cleanAmountString = cleanAmountString.replace(/[^\d\.,\(\)-]/g, ''); 
-
-            // 1. Manejar paréntesis para números negativos (ej: (100) -> -100)
             if (cleanAmountString.startsWith('(') && cleanAmountString.endsWith(')')) {
                 cleanAmountString = '-' + cleanAmountString.slice(1, -1);
             }
-
-            // 2. Limpieza de separadores de miles y detección de decimal
             let lastSeparatorIndex = -1;
-            
-            // Encontrar el último separador (',' o '.')
             for (let i = cleanAmountString.length - 1; i >= 0; i--) {
                 if (cleanAmountString[i] === ',' || cleanAmountString[i] === '.') {
                     lastSeparatorIndex = i;
                     break;
                 }
             }
-            
             if (lastSeparatorIndex !== -1) {
                 const decimalChar = cleanAmountString[lastSeparatorIndex];
-                const separatorToRemove = (decimalChar === ',') ? '.' : ','; // Si el decimal es ',', el separador de miles es '.'
-                
-                // Eliminar separadores de miles y cambiar el decimal por '.'
-                // Esto maneja formatos como 1.234,56 (decimal=,) y 1,234.56 (decimal=.)
+                const separatorToRemove = (decimalChar === ',') ? '.' : ','; 
                 let tempString = cleanAmountString.replace(new RegExp('\\' + separatorToRemove, 'g'), '');
                 tempString = tempString.replace(decimalChar, '.');
                 cleanAmountString = tempString;
             } else {
-                // Si no hay separador, es un entero, pero nos aseguramos de no tener puntos/comas accidentales.
                 cleanAmountString = cleanAmountString.replace(/[\.,]/g, '');
             }
-
             const amount = parseFloat(cleanAmountString);
             return isNaN(amount) ? 0 : amount;
         }
 
-
-        /**
-         * Función de respaldo que busca el monto válido MÁS GRANDE en una fila.
-         *
-         * @param {string[]} rowValues - Array de valores de la fila.
-         * @param {number} startIndex - Índice desde donde empezar la búsqueda.
-         * @returns {number} El monto parseado encontrado (el más grande).
-         */
         function findTotalAmountInRow(rowValues, startIndex) {
             let maxTotal = 0;
             let maxTotalIndex = -1;
-
-            // Buscamos desde el final de los datos hacia el inicio (índice 2, que suele ser el inicio de los meses)
             const minSearchIndex = 2; 
-
             for (let i = startIndex; i >= minSearchIndex; i--) { 
                 const currentString = rowValues[i] || '';
                 const currentAmountAbsolute = Math.abs(parseAmount(currentString)); 
-                
-                // Solo consideramos montos grandes, mayores a 100, para evitar totales accidentales
                 if (currentAmountAbsolute > maxTotal && currentAmountAbsolute > 100) { 
                     maxTotal = currentAmountAbsolute;
                     maxTotalIndex = i;
                 }
             }
-            
             if (maxTotalIndex !== -1 && maxTotal > 0) {
                 const finalAmount = parseAmount(rowValues[maxTotalIndex]); 
-                console.log(`[DEBUG - FALLBACK: MAX] Monto total (MAX) encontrado en la columna ${maxTotalIndex}: '${rowValues[maxTotalIndex]}' -> ${finalAmount}`);
                 return finalAmount;
             } else {
-                console.warn("[DEBUG - FALLBACK: MAX] No se encontró ningún monto total válido (>100) en las columnas de datos.");
                 return 0;
             }
         }
 
-
-        /**
-         * Calcula el total general de ingresos, gastos y el balance neto acumulado a partir de los datos mensuales.
-         */
         function calculateSummary(data) {
             let grandTotalIncome = 0;
             let grandTotalExpense = 0;
-
+            let activeMonths = 0;
             data.forEach(item => {
                 grandTotalIncome += item.income;
                 grandTotalExpense += item.expense; 
+                if (item.balance !== 0) {
+                    activeMonths++;
+                }
             });
-            
             const netBalance = grandTotalIncome - grandTotalExpense;
-
-            return { totalIncome: grandTotalIncome, totalExpense: grandTotalExpense, netBalance };
+            const avgIncome = activeMonths > 0 ? grandTotalIncome / activeMonths : 0;
+            const avgExpense = activeMonths > 0 ? grandTotalExpense / activeMonths : 0;
+            const avgBalance = activeMonths > 0 ? netBalance / activeMonths : 0;
+            return { 
+                totalIncome: grandTotalIncome, 
+                totalExpense: grandTotalExpense, 
+                netBalance,
+                avgIncome,
+                avgExpense,
+                avgBalance,
+                activeMonths
+            };
         }
 
-
-        /**
-         * Actualiza los elementos del dashboard con los valores del resumen general.
-         */
         function renderSummary(summary) {
             const incomeElement = document.getElementById('total-income');
             const expenseElement = document.getElementById('total-expense');
             const netBalanceElement = document.getElementById('net-balance');
+            const avgIncomeElement = document.getElementById('avg-income');
+            const avgExpenseElement = document.getElementById('avg-expense');
+            const avgBalanceElement = document.getElementById('avg-balance');
 
             incomeElement.textContent = formatCurrency(summary.totalIncome);
             expenseElement.textContent = formatCurrency(summary.totalExpense);
             netBalanceElement.textContent = formatCurrency(summary.netBalance);
-            
-            // Lógica de color simplificada: Verde para positivo, Rojo para negativo, Azul para neutral.
+            avgIncomeElement.textContent = formatCurrency(summary.avgIncome);
+            avgExpenseElement.textContent = formatCurrency(summary.avgExpense);
+            avgBalanceElement.textContent = formatCurrency(summary.avgBalance);
+
             netBalanceElement.classList.remove('text-red-600', 'text-green-600', 'text-blue-600');
-            
             if (summary.netBalance < 0) {
                 netBalanceElement.classList.add('text-red-600');
             } else if (summary.netBalance > 0) {
@@ -297,29 +261,32 @@
             } else {
                 netBalanceElement.classList.add('text-blue-600');
             }
+            avgBalanceElement.classList.remove('text-red-600', 'text-green-600', 'text-purple-600');
+            if (summary.avgBalance < 0) {
+                avgBalanceElement.classList.add('text-red-600');
+            } else if (summary.avgBalance > 0) {
+                avgBalanceElement.classList.add('text-green-600');
+            } else {
+                avgBalanceElement.classList.add('text-purple-600');
+            }
         }
 
-        /**
-         * Rellena la tabla con el resumen de Ingresos, Gastos y Balance por Mes.
-         */
         function renderMonthlySummary(data) {
             const tableBody = document.getElementById('transaction-table-body');
-            tableBody.innerHTML = ''; // Asegurar que esté vacío
-
+            tableBody.innerHTML = ''; 
             data.forEach(item => {
                 const balanceClass = item.balance < 0 ? 'text-red-600 font-bold' : 'text-green-700 font-bold';
-                
                 const row = `
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${item.date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm ${balanceClass}">
+                            ${formatCurrency(item.balance)}
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-green-600">
                             ${formatCurrency(item.income)}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-red-600">
                             ${formatCurrency(item.expense)}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm ${balanceClass}">
-                            ${formatCurrency(item.balance)}
                         </td>
                     </tr>
                 `;
@@ -327,141 +294,88 @@
             });
         }
 
-
-        /**
-         * Procesa el TSV pivotado, calcula el resumen y renderiza la UI.
-         */
         async function fetchAndProcessData() {
             const loadingAlert = document.getElementById('loading-alert');
             const errorAlert = document.getElementById('error-alert');
-            
             loadingAlert.classList.remove('hidden');
             errorAlert.classList.add('hidden');
-            document.getElementById('transaction-table-body').innerHTML = ''; // Limpiar la tabla
-
+            document.getElementById('transaction-table-body').innerHTML = '';
             try {
                 const response = await fetch(CSV_URL);
                 if (!response.ok) {
                     throw new Error(`Error al cargar el archivo: ${response.status} ${response.statusText}`);
                 }
-
                 const tsvText = await response.text();
-
-                // 1. Limpieza y detección del delimitador
                 const cleanedTsvText = tsvText.trim().replace(/^\ufeff/, ''); 
                 const delimiter = detectDelimiter(cleanedTsvText); 
-
                 const allRows = cleanedTsvText.split(/\r?\n/);
-                
                 let headerRowIndex = -1;
                 let rawHeaders = [];
                 const MIN_COLUMNS_FOR_DATA = 4; 
-
-                // 2. Encontrar la fila de encabezados
                 for (let i = 0; i < allRows.length; i++) {
                     const rowText = allRows[i].trim();
                     if (rowText.length === 0) continue; 
-
                     const potentialHeaders = rowText.split(delimiter).map(h => cleanTextForComparison(h));
-
-                    // Buscamos la fila que contiene 'total' y que tiene suficientes columnas
                     if (potentialHeaders.length >= MIN_COLUMNS_FOR_DATA && potentialHeaders.includes('total')) {
                         headerRowIndex = i;
-                        // Obtener los encabezados crudos para el mapeo de columnas
                         rawHeaders = allRows[i].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
                         break;
                     }
                 }
-
                 if (headerRowIndex === -1) {
                     throw new Error("No se pudo localizar la fila de encabezados. Asegúrate de que contiene la columna 'TOTAL'.");
                 }
-
-                // 3. Obtener todas las filas de datos (a partir de la siguiente fila después del encabezado).
                 const dataRows = allRows.slice(headerRowIndex + 1).filter(r => r.trim() !== '');
-
-                // 4. Buscar las filas de Ingresos y Gastos TOTALES con rastreo de contexto
                 let grandTotalIncomeRow = null;
                 let grandTotalExpenseRow = null;
                 let currentType = ''; 
                 const minColumns = 3; 
-
-                // Iterar sobre las filas de datos para encontrar las filas de resumen (TOTAL)
                 for (let i = 0; i < dataRows.length; i++) {
                     const values = dataRows[i].split(delimiter).map(v => v.trim().replace(/^"|"$/g, ''));
-                    
                     if (values.length >= minColumns) {
                         const type = cleanTextForComparison(values[0]);   
                         const category = cleanTextForComparison(values[1]);
-
                         if (type.includes('ingresos') && !type.includes('gastos')) {
                             currentType = 'ingresos';
                         } else if (type.includes('gastos')) {
                             currentType = 'gastos';
                         }
-
-                        // Buscamos la fila que tiene 'total' en la segunda columna (columna de Sub-Concepto)
                         if (category.includes('total')) {
                             if (currentType === 'ingresos' && !grandTotalIncomeRow) { 
                                 grandTotalIncomeRow = values;
-                                console.log(`[INFO] Fila TOTAL de Ingresos identificada.`);
                             } else if (currentType === 'gastos' && !grandTotalExpenseRow) {
                                 grandTotalExpenseRow = values;
-                                console.log(`[INFO] Fila TOTAL de Gastos identificada.`);
                             }
                             if (grandTotalIncomeRow && grandTotalExpenseRow) break;
                         }
                     }
                 }
-
                 if (!grandTotalIncomeRow || !grandTotalExpenseRow) {
                     throw new Error("No se pudo encontrar la fila 'TOTAL' para Ingresos o Gastos.");
                 }
-
-                // 5. Cálculo del detalle mensual - Detección dinámica del inicio de meses
-                
                 let firstMonthIndex = -1;
-                // Buscamos el índice de la primera columna que contiene un nombre de mes conocido.
                 for(let i = 0; i < rawHeaders.length; i++) {
                     const cleanHeader = cleanTextForComparison(rawHeaders[i]);
-                    // Comprobar si el encabezado limpio comienza con un nombre de mes (ej: 'ene-25' comienza con 'ene')
                     const isMonthHeader = MONTH_NAMES.some(month => cleanHeader.startsWith(month));
-                    
                     if (isMonthHeader) {
                         firstMonthIndex = i;
-                        console.log(`[DEBUG] Primer mes ('${rawHeaders[i]}') detectado en el índice de columna: ${firstMonthIndex}`);
                         break;
                     }
                 }
-
                 if (firstMonthIndex === -1) {
-                    // Fallback a 2 si no se puede detectar (asumiendo Concepto y Sub-Concepto en 0 y 1)
                     firstMonthIndex = 2; 
-                    console.warn("No se pudo identificar la columna del primer mes. Se usará el índice de fallback 2.");
                 }
-
                 const dataStartColumnIndex = firstMonthIndex; 
-                
                 const totalColumnIndex = rawHeaders.findIndex(h => cleanTextForComparison(h) === 'total');
-                // La columna límite es el 'TOTAL' o el final de los encabezados si 'TOTAL' no existe.
                 const columnLimit = totalColumnIndex !== -1 ? totalColumnIndex : rawHeaders.length; 
-
                 const monthlyData = [];
-
-                // Recorrer todas las columnas de meses (desde el índice del primer mes hasta antes de 'TOTAL')
                 for (let i = dataStartColumnIndex; i < columnLimit; i++) { 
-                    
                     const month = rawHeaders[i];
-                    
-                    // *** CORRECCIÓN CRÍTICA: Se usa el índice 'i' directamente. El offset '+2' era el error. ***
                     const incomeString = grandTotalIncomeRow[i+2] || '0';
                     const expenseString = grandTotalExpenseRow[i+2] || '0';
-                    
                     const incomeAmount = parseAmount(incomeString);
                     const expenseAmount = parseAmount(expenseString); 
                     const monthlyBalance = incomeAmount - expenseAmount;
-
-                    // Nos aseguramos de que no sea la columna 'TOTAL' ni una columna vacía.
                     if (month && cleanTextForComparison(month).length > 0 && !cleanTextForComparison(month).includes('total')) {
                         monthlyData.push({ 
                             date: month, 
@@ -469,73 +383,50 @@
                             expense: expenseAmount, 
                             balance: monthlyBalance 
                         });
-                        console.log(`[DEBUG] Emparejado: Mes: ${month} (Index ${i}) con Ingreso: ${incomeAmount}, Gasto: ${expenseAmount}`);
                     }
                 }
-                
-                // 6. Cálculo del Resumen General (Dashboard)
                 let summary;
-
                 if (totalColumnIndex === -1) {
                     summary = calculateSummary(monthlyData);
-                    console.warn("La columna de encabezado 'TOTAL' no fue encontrada. Se calculará el total sumando los meses del detalle.");
                 } else {
-                    // *** CORRECCIÓN CRÍTICA: Se usa el índice 'totalColumnIndex' directamente. El offset '+2' era el error. ***
                     let grandTotalIncome = parseAmount(grandTotalIncomeRow[totalColumnIndex+2] || '0');
                     let grandTotalExpense = parseAmount(grandTotalExpenseRow[totalColumnIndex+2] || '0');
-                    
-                    console.log(`[DEBUG] Columna 'TOTAL' (índice ${totalColumnIndex}). Ingreso leído: ${grandTotalIncome}. Gasto leído: ${grandTotalExpense}.`);
-
-                    // FIX CRÍTICO: Si el valor de la columna 'TOTAL' es 0, usamos el respaldo.
                     if (grandTotalIncome === 0 || grandTotalExpense === 0) {
-                        console.warn(`[WARN] El Ingreso o Gasto Total bajo la columna 'TOTAL' es 0. Recurriendo a buscar el valor numérico MÁS GRANDE.`);
-                        
-                        // Si 'TOTAL' no fue la última columna, la buscamos hasta el final.
                         const fallbackIndex = rawHeaders.length - 1; 
-
                         if (grandTotalIncome === 0) {
                             grandTotalIncome = findTotalAmountInRow(grandTotalIncomeRow, fallbackIndex);
                         }
                         if (grandTotalExpense === 0) {
                             grandTotalExpense = findTotalAmountInRow(grandTotalExpenseRow, fallbackIndex);
                         }
-                        
-                        console.log(`[DEBUG] Totales finales después del respaldo: Ingreso: ${grandTotalIncome}, Gasto: ${grandTotalExpense}.`);
                     }
-                    
-                    summary = {
-                        totalIncome: grandTotalIncome,
-                        totalExpense: grandTotalExpense,
-                        netBalance: grandTotalIncome - grandTotalExpense
-                    };
+                    summary = calculateSummary(monthlyData);
+                    summary.totalIncome = grandTotalIncome;
+                    summary.totalExpense = grandTotalExpense;
+                    summary.netBalance = grandTotalIncome - grandTotalExpense;
+                    summary.avgIncome = summary.activeMonths > 0 ? grandTotalIncome / summary.activeMonths : 0;
+                    summary.avgExpense = summary.activeMonths > 0 ? grandTotalExpense / summary.activeMonths : 0;
+                    summary.avgBalance = summary.activeMonths > 0 ? (grandTotalIncome - grandTotalExpense) / summary.activeMonths : 0;
                 }
-                
                 if (monthlyData.length === 0 && (summary.totalIncome === 0 && summary.totalExpense === 0)) {
                     throw new Error("Se cargó el archivo, pero no se encontraron datos válidos. Revisa la estructura de tu hoja de cálculo.");
                 }
-
-                // 7. Renderizar
                 renderSummary(summary);
                 renderMonthlySummary(monthlyData);
-                console.log("[INFO] Datos cargados y procesados con éxito. Total de meses mostrados:", monthlyData.length);
-
             } catch (error) {
-                console.error("Error en la carga o procesamiento:", error);
                 document.getElementById('error-message').textContent = error.message;
                 errorAlert.classList.remove('hidden');
-                
-                // Reset summary display
                 document.getElementById('total-income').textContent = formatCurrency(0);
                 document.getElementById('total-expense').textContent = formatCurrency(0);
                 document.getElementById('net-balance').textContent = formatCurrency(0);
+                document.getElementById('avg-income').textContent = formatCurrency(0);
+                document.getElementById('avg-expense').textContent = formatCurrency(0);
+                document.getElementById('avg-balance').textContent = formatCurrency(0);
             } finally {
                 loadingAlert.classList.add('hidden');
             }
         }
-
-        // Ejecutar la carga de datos al cargar la página
         window.onload = fetchAndProcessData;
-
     </script>
 </body>
 </html>
