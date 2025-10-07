@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resumen de Ingresos y Gastos</title>
-    <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -12,7 +11,7 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                    },
+                    }
                 }
             }
         }
@@ -22,118 +21,134 @@
             font-family: 'Inter', sans-serif;
             background-color: #f7f9fb;
         }
-        #transaction-list-body::-webkit-scrollbar {
-            width: 8px;
-        }
-        #transaction-list-body::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 10px;
-        }
-        #transaction-list-body::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
         .loading-animation {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #3498db;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 30px; height: 30px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes spin { 0%{transform:rotate(0deg);}100%{transform:rotate(360deg);} }
+        .active-tab {
+            @apply bg-blue-100 border-blue-500 text-blue-700;
+        }
+        /* Sticky primera columna para tablas */
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: white;
+        }
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            background: #f9fafb;
         }
     </style>
 </head>
 <body class="p-4 md:p-8">
-
     <div id="app-container" class="max-w-4xl mx-auto">
         <header class="mb-8">
             <h1 class="text-3xl font-extrabold text-gray-800 mb-2">📊 Ingresos y gastos familia Doncel García</h1>
         </header>
-
-        <!-- Sección de Resumen (Dashboard) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-
-            <!-- Card de Saldo Neto -->
-            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
-                <p class="text-sm font-medium text-gray-500 uppercase">Balance Neto</p>
-                <p id="net-balance" class="text-3xl font-bold text-blue-600 mt-1">Cargando...</p>
-            </div>
-
-            <!-- Card de Ingresos -->
-            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500">
-                <p class="text-sm font-medium text-gray-500 uppercase">Ingresos Totales</p>
-                <p id="total-income" class="text-3xl font-bold text-green-600 mt-1">Cargando...</p>
-            </div>
-
-            <!-- Card de Gastos -->
-            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-red-500">
-                <p class="text-sm font-medium text-gray-500 uppercase">Gastos Totales</p>
-                <p id="total-expense" class="text-3xl font-bold text-red-600 mt-1">Cargando...</p>
-            </div>
-
-            <!-- Card de Balance Promedio -->
-            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-purple-500">
-                <p class="text-sm font-medium text-gray-500 uppercase">Balance Promedio</p>
-                <p id="avg-balance" class="text-3xl font-bold text-purple-600 mt-1">Cargando...</p>
-            </div>
-
-            <!-- Card de Ingreso Promedio -->
-            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-emerald-500">
-                <p class="text-sm font-medium text-gray-500 uppercase">Ingreso Promedio</p>
-                <p id="avg-income" class="text-3xl font-bold text-emerald-600 mt-1">Cargando...</p>
-            </div>
-
-            <!-- Card de Gasto Promedio -->
-            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-orange-500">
-                <p class="text-sm font-medium text-gray-500 uppercase">Gasto Promedio</p>
-                <p id="avg-expense" class="text-3xl font-bold text-orange-600 mt-1">Cargando...</p>
-            </div>
-
+        <!-- Tabs renombradas y reordenadas -->
+        <div class="flex space-x-2 mb-8">
+            <button id="tab-2025-General" class="px-5 py-2 rounded-t-lg font-semibold border-b-2 border-blue-500 bg-blue-100 text-blue-700 active-tab focus:outline-none" onclick="showTab('2025-General')">2025-General</button>
+            <button id="tab-2025-Categorías" class="px-5 py-2 rounded-t-lg font-semibold border-b-2 border-gray-300 bg-gray-50 text-gray-600 focus:outline-none" onclick="showTab('2025-Categorías')">2025-Categorías</button>
         </div>
-
-        <!-- Alerta de Carga -->
-        <div id="loading-alert" class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-xl relative mb-8 flex items-center justify-center">
-            <div class="loading-animation mr-3"></div>
-            <span class="block sm:inline font-semibold">Cargando y procesando datos del resumen mensual...</span>
+        <!-- Panel 2025-General -->
+        <div id="tab-panel-2025-General" class="tab-panel">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
+                    <p class="text-sm font-medium text-gray-500 uppercase">Balance Neto</p>
+                    <p id="net-balance" class="text-3xl font-bold text-blue-600 mt-1">Cargando...</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500">
+                    <p class="text-sm font-medium text-gray-500 uppercase">Ingresos Totales</p>
+                    <p id="total-income" class="text-3xl font-bold text-green-600 mt-1">Cargando...</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-red-500">
+                    <p class="text-sm font-medium text-gray-500 uppercase">Gastos Totales</p>
+                    <p id="total-expense" class="text-3xl font-bold text-red-600 mt-1">Cargando...</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-purple-500">
+                    <p class="text-sm font-medium text-gray-500 uppercase">Balance Promedio</p>
+                    <p id="avg-balance" class="text-3xl font-bold text-purple-600 mt-1">Cargando...</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-emerald-500">
+                    <p class="text-sm font-medium text-gray-500 uppercase">Ingreso Promedio</p>
+                    <p id="avg-income" class="text-3xl font-bold text-emerald-600 mt-1">Cargando...</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-orange-500">
+                    <p class="text-sm font-medium text-gray-500 uppercase">Gasto Promedio</p>
+                    <p id="avg-expense" class="text-3xl font-bold text-orange-600 mt-1">Cargando...</p>
+                </div>
+            </div>
+            <div id="loading-alert" class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-xl relative mb-8 flex items-center justify-center">
+                <div class="loading-animation mr-3"></div>
+                <span class="block sm:inline font-semibold">Cargando y procesando datos del resumen mensual...</span>
+            </div>
+            <div id="error-alert" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative mb-8" role="alert">
+                <p class="font-bold">Error de Carga</p>
+                <p id="error-message" class="text-sm">No se pudieron cargar o procesar los datos. Asegúrate de que las filas 'Ingresos' y 'Gastos' estén presentes.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Detalle Mensual</h2>
+                <div class="overflow-x-auto">
+                    <div id="transaction-list-body" class="max-h-96 overflow-y-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-xl">Mes</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ingresos</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-xl">Gastos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transaction-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <!-- Contenedor de Error (oculto por defecto) -->
-        <div id="error-alert" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative mb-8" role="alert">
-            <p class="font-bold">Error de Carga</p>
-            <p id="error-message" class="text-sm">No se pudieron cargar o procesar los datos. Asegúrate de que las filas 'Ingresos' y 'Gastos' estén presentes.</p>
-        </div>
-
-        <!-- Sección de Transacciones -->
-        <div class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Detalle Mensual</h2>
-            
-            <div class="overflow-x-auto">
-                <div id="transaction-list-body" class="max-h-96 overflow-y-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50 sticky top-0">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-xl">Mes</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ingresos</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-xl">Gastos</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transaction-table-body" class="bg-white divide-y divide-gray-200">
-                            <!-- Los datos se insertarán aquí -->
-                        </tbody>
-                    </table>
+        <!-- Panel 2025-Categorías -->
+        <div id="tab-panel-2025-Categorías" class="tab-panel hidden">
+            <div id="loading-alert-general" class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-xl relative mb-8 flex items-center justify-center">
+                <div class="loading-animation mr-3"></div>
+                <span class="block sm:inline font-semibold">Cargando y procesando datos de categorías...</span>
+            </div>
+            <div id="error-alert-general" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative mb-8" role="alert">
+                <p class="font-bold">Error de Carga</p>
+                <p id="error-message-general" class="text-sm">No se pudieron cargar o procesar los datos para 2025-Categorías.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+                <h2 class="text-2xl font-semibold text-green-700 mb-4">Listado de Categorías de Ingresos</h2>
+                <div class="overflow-x-auto">
+                    <table id="income-category-table" class="min-w-full divide-y divide-gray-200"></table>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-semibold text-red-700 mb-4">Listado de Categorías de Gastos</h2>
+                <div class="overflow-x-auto">
+                    <table id="expense-category-table" class="min-w-full divide-y divide-gray-200"></table>
                 </div>
             </div>
         </div>
     </div>
-
     <script>
-        // URL del TSV proporcionado por el usuario
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRngsRNO6xjSCJfcbsKYlRlhl0JIj4wChXPWOBh7afvBReIq0rBlFIWKKyh5vAvuw/pub?gid=879261942&single=true&output=tsv';
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-panel').forEach(e => e.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(e => {
+                e.classList.remove('bg-blue-100', 'border-blue-500', 'text-blue-700', 'active-tab');
+                e.classList.add('bg-gray-50', 'border-gray-300', 'text-gray-600');
+            });
+            document.getElementById('tab-panel-' + tabName).classList.remove('hidden');
+            document.getElementById('tab-' + tabName).classList.remove('bg-gray-50', 'border-gray-300', 'text-gray-600');
+            document.getElementById('tab-' + tabName).classList.add('bg-blue-100', 'border-blue-500', 'text-blue-700', 'active-tab');
+        }
 
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRngsRNO6xjSCJfcbsKYlRlhl0JIj4wChXPWOBh7afvBReIq0rBlFIWKKyh5vAvuw/pub?gid=879261942&single=true&output=tsv';
         const MONTH_NAMES = [
             'ene', 'feb', 'mar', 'abr', 'may', 'jun',
             'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
@@ -148,24 +163,21 @@
                 minimumFractionDigits: 2,
             }).format(amount);
         }
-
         function cleanTextForComparison(text) {
             if (typeof text !== 'string') return '';
             let cleaned = text.trim().replace(/^"|"$/g, '').toLowerCase();
             cleaned = cleaned.replace(/[^a-z0-9áéíóúüñ\s]/g, '');
             return cleaned.replace(/\s+/g, ' ').trim();
         }
-
         function detectDelimiter(text) {
             const lines = text.split('\n');
             if (lines.length === 0) return '\t';
-            const firstLine = lines[0]; 
+            const firstLine = lines[0];
             if (firstLine.includes('\t')) return '\t';
             const commaCount = (firstLine.match(/,/g) || []).length;
             const semicolonCount = (firstLine.match(/;/g) || []).length;
             return semicolonCount > commaCount ? ';' : ',';
         }
-
         function parseAmount(amountString) {
             let cleanAmountString = amountString.trim().replace(/"/g, '');
             cleanAmountString = cleanAmountString.replace(/[^\d\.,\(\)-]/g, ''); 
@@ -191,27 +203,6 @@
             const amount = parseFloat(cleanAmountString);
             return isNaN(amount) ? 0 : amount;
         }
-
-        function findTotalAmountInRow(rowValues, startIndex) {
-            let maxTotal = 0;
-            let maxTotalIndex = -1;
-            const minSearchIndex = 2; 
-            for (let i = startIndex; i >= minSearchIndex; i--) { 
-                const currentString = rowValues[i] || '';
-                const currentAmountAbsolute = Math.abs(parseAmount(currentString)); 
-                if (currentAmountAbsolute > maxTotal && currentAmountAbsolute > 100) { 
-                    maxTotal = currentAmountAbsolute;
-                    maxTotalIndex = i;
-                }
-            }
-            if (maxTotalIndex !== -1 && maxTotal > 0) {
-                const finalAmount = parseAmount(rowValues[maxTotalIndex]); 
-                return finalAmount;
-            } else {
-                return 0;
-            }
-        }
-
         function calculateSummary(data) {
             let grandTotalIncome = 0;
             let grandTotalExpense = 0;
@@ -237,7 +228,6 @@
                 activeMonths
             };
         }
-
         function renderSummary(summary) {
             const incomeElement = document.getElementById('total-income');
             const expenseElement = document.getElementById('total-expense');
@@ -245,14 +235,12 @@
             const avgIncomeElement = document.getElementById('avg-income');
             const avgExpenseElement = document.getElementById('avg-expense');
             const avgBalanceElement = document.getElementById('avg-balance');
-
             incomeElement.textContent = formatCurrency(summary.totalIncome);
             expenseElement.textContent = formatCurrency(summary.totalExpense);
             netBalanceElement.textContent = formatCurrency(summary.netBalance);
             avgIncomeElement.textContent = formatCurrency(summary.avgIncome);
             avgExpenseElement.textContent = formatCurrency(summary.avgExpense);
             avgBalanceElement.textContent = formatCurrency(summary.avgBalance);
-
             netBalanceElement.classList.remove('text-red-600', 'text-green-600', 'text-blue-600');
             if (summary.netBalance < 0) {
                 netBalanceElement.classList.add('text-red-600');
@@ -270,7 +258,6 @@
                 avgBalanceElement.classList.add('text-purple-600');
             }
         }
-
         function renderMonthlySummary(data) {
             const tableBody = document.getElementById('transaction-table-body');
             tableBody.innerHTML = ''; 
@@ -293,7 +280,6 @@
                 tableBody.insertAdjacentHTML('beforeend', row);
             });
         }
-
         async function fetchAndProcessData() {
             const loadingAlert = document.getElementById('loading-alert');
             const errorAlert = document.getElementById('error-alert');
@@ -302,77 +288,61 @@
             document.getElementById('transaction-table-body').innerHTML = '';
             try {
                 const response = await fetch(CSV_URL);
-                if (!response.ok) {
-                    throw new Error(`Error al cargar el archivo: ${response.status} ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`Error al cargar el archivo: ${response.status} ${response.statusText}`);
                 const tsvText = await response.text();
                 const cleanedTsvText = tsvText.trim().replace(/^\ufeff/, ''); 
                 const delimiter = detectDelimiter(cleanedTsvText); 
                 const allRows = cleanedTsvText.split(/\r?\n/);
                 let headerRowIndex = -1;
                 let rawHeaders = [];
-                const MIN_COLUMNS_FOR_DATA = 4; 
                 for (let i = 0; i < allRows.length; i++) {
                     const rowText = allRows[i].trim();
                     if (rowText.length === 0) continue; 
                     const potentialHeaders = rowText.split(delimiter).map(h => cleanTextForComparison(h));
-                    if (potentialHeaders.length >= MIN_COLUMNS_FOR_DATA && potentialHeaders.includes('total')) {
+                    if (potentialHeaders.includes('total')) {
                         headerRowIndex = i;
                         rawHeaders = allRows[i].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
                         break;
                     }
                 }
-                if (headerRowIndex === -1) {
-                    throw new Error("No se pudo localizar la fila de encabezados. Asegúrate de que contiene la columna 'TOTAL'.");
+                if (headerRowIndex === -1)
+                    throw new Error("No se pudo localizar la fila de encabezados.");
+                let firstMonthIndex = -1;
+                for(let i = 0; i < rawHeaders.length; i++) {
+                    const cleanHeader = cleanTextForComparison(rawHeaders[i]);
+                    if (MONTH_NAMES.some(month => cleanHeader.startsWith(month))) {
+                        firstMonthIndex = i;
+                        break;
+                    }
                 }
-                const dataRows = allRows.slice(headerRowIndex + 1).filter(r => r.trim() !== '');
+                if (firstMonthIndex === -1) firstMonthIndex = 2; 
+                const totalColumnIndex = rawHeaders.findIndex(h => cleanTextForComparison(h) === 'total');
+                const columnLimit = totalColumnIndex !== -1 ? totalColumnIndex : rawHeaders.length;
                 let grandTotalIncomeRow = null;
                 let grandTotalExpenseRow = null;
-                let currentType = ''; 
-                const minColumns = 3; 
+                let currentType = '';
+                const minColumns = 3;
+                const dataRows = allRows.slice(headerRowIndex + 1).filter(r => r.trim() !== '');
                 for (let i = 0; i < dataRows.length; i++) {
                     const values = dataRows[i].split(delimiter).map(v => v.trim().replace(/^"|"$/g, ''));
                     if (values.length >= minColumns) {
                         const type = cleanTextForComparison(values[0]);   
                         const category = cleanTextForComparison(values[1]);
-                        if (type.includes('ingresos') && !type.includes('gastos')) {
-                            currentType = 'ingresos';
-                        } else if (type.includes('gastos')) {
-                            currentType = 'gastos';
-                        }
+                        if (type.includes('ingresos') && !type.includes('gastos')) { currentType = 'ingresos'; }
+                        else if (type.includes('gastos')) { currentType = 'gastos'; }
                         if (category.includes('total')) {
-                            if (currentType === 'ingresos' && !grandTotalIncomeRow) { 
-                                grandTotalIncomeRow = values;
-                            } else if (currentType === 'gastos' && !grandTotalExpenseRow) {
-                                grandTotalExpenseRow = values;
-                            }
+                            if (currentType === 'ingresos' && !grandTotalIncomeRow) { grandTotalIncomeRow = values; }
+                            else if (currentType === 'gastos' && !grandTotalExpenseRow) { grandTotalExpenseRow = values; }
                             if (grandTotalIncomeRow && grandTotalExpenseRow) break;
                         }
                     }
                 }
-                if (!grandTotalIncomeRow || !grandTotalExpenseRow) {
-                    throw new Error("No se pudo encontrar la fila 'TOTAL' para Ingresos o Gastos.");
-                }
-                let firstMonthIndex = -1;
-                for(let i = 0; i < rawHeaders.length; i++) {
-                    const cleanHeader = cleanTextForComparison(rawHeaders[i]);
-                    const isMonthHeader = MONTH_NAMES.some(month => cleanHeader.startsWith(month));
-                    if (isMonthHeader) {
-                        firstMonthIndex = i;
-                        break;
-                    }
-                }
-                if (firstMonthIndex === -1) {
-                    firstMonthIndex = 2; 
-                }
-                const dataStartColumnIndex = firstMonthIndex; 
-                const totalColumnIndex = rawHeaders.findIndex(h => cleanTextForComparison(h) === 'total');
-                const columnLimit = totalColumnIndex !== -1 ? totalColumnIndex : rawHeaders.length; 
+                if (!grandTotalIncomeRow || !grandTotalExpenseRow) throw new Error("No se pudo encontrar la fila 'TOTAL' para Ingresos o Gastos.");
                 const monthlyData = [];
-                for (let i = dataStartColumnIndex; i < columnLimit; i++) { 
+                for (let i = firstMonthIndex; i < columnLimit; i++) { 
                     const month = rawHeaders[i];
-                    const incomeString = grandTotalIncomeRow[i+2] || '0';
-                    const expenseString = grandTotalExpenseRow[i+2] || '0';
+                    const incomeString = grandTotalIncomeRow[i] || '0';
+                    const expenseString = grandTotalExpenseRow[i] || '0';
                     const incomeAmount = parseAmount(incomeString);
                     const expenseAmount = parseAmount(expenseString); 
                     const monthlyBalance = incomeAmount - expenseAmount;
@@ -385,32 +355,7 @@
                         });
                     }
                 }
-                let summary;
-                if (totalColumnIndex === -1) {
-                    summary = calculateSummary(monthlyData);
-                } else {
-                    let grandTotalIncome = parseAmount(grandTotalIncomeRow[totalColumnIndex+2] || '0');
-                    let grandTotalExpense = parseAmount(grandTotalExpenseRow[totalColumnIndex+2] || '0');
-                    if (grandTotalIncome === 0 || grandTotalExpense === 0) {
-                        const fallbackIndex = rawHeaders.length - 1; 
-                        if (grandTotalIncome === 0) {
-                            grandTotalIncome = findTotalAmountInRow(grandTotalIncomeRow, fallbackIndex);
-                        }
-                        if (grandTotalExpense === 0) {
-                            grandTotalExpense = findTotalAmountInRow(grandTotalExpenseRow, fallbackIndex);
-                        }
-                    }
-                    summary = calculateSummary(monthlyData);
-                    summary.totalIncome = grandTotalIncome;
-                    summary.totalExpense = grandTotalExpense;
-                    summary.netBalance = grandTotalIncome - grandTotalExpense;
-                    summary.avgIncome = summary.activeMonths > 0 ? grandTotalIncome / summary.activeMonths : 0;
-                    summary.avgExpense = summary.activeMonths > 0 ? grandTotalExpense / summary.activeMonths : 0;
-                    summary.avgBalance = summary.activeMonths > 0 ? (grandTotalIncome - grandTotalExpense) / summary.activeMonths : 0;
-                }
-                if (monthlyData.length === 0 && (summary.totalIncome === 0 && summary.totalExpense === 0)) {
-                    throw new Error("Se cargó el archivo, pero no se encontraron datos válidos. Revisa la estructura de tu hoja de cálculo.");
-                }
+                let summary = calculateSummary(monthlyData);
                 renderSummary(summary);
                 renderMonthlySummary(monthlyData);
             } catch (error) {
@@ -426,7 +371,112 @@
                 loadingAlert.classList.add('hidden');
             }
         }
-        window.onload = fetchAndProcessData;
+        function renderCategoryTable(containerId, categories, months, isIncome) {
+            const table = document.getElementById(containerId);
+            const columnTotals = months.map((_, i) =>
+                Object.values(categories).map(arr => arr[i] ?? 0)
+                    .reduce((a, b) => a + b, 0)
+            );
+            const grandTotal = columnTotals.reduce((a, b) => a + b, 0);
+            let header = `
+                <thead>
+                    <tr>
+                        <th class="px-3 py-2 sticky-col sticky-header text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                        ${months.map(m => `<th class="px-3 py-2 sticky-header text-right text-xs font-medium text-gray-500 uppercase tracking-wider">${m}</th>`).join('')}
+                        <th class="px-3 py-2 sticky-header text-right text-xs font-medium text-gray-500 uppercase tracking-wider">TOTAL</th>
+                    </tr>
+                </thead>
+            `;
+            let body = '<tbody class="bg-white divide-y divide-gray-200">';
+            Object.keys(categories).forEach(cat => {
+                body += `<tr>
+                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium sticky-col">${cat}</td>
+                    ${months.map((m, i) => {
+                        const v = categories[cat][i] ?? 0;
+                        return `<td class="px-3 py-2 whitespace-nowrap text-right text-sm ${isIncome ? 'text-green-700' : 'text-red-700'}">${formatCurrency(v)}</td>`;
+                    }).join('')}
+                    <td class="px-3 py-2 whitespace-nowrap text-right text-sm font-bold ${isIncome ? 'text-green-600' : 'text-red-600'}">${formatCurrency(categories[cat].reduce((a, b) => a + b, 0))}</td>
+                </tr>`;
+            });
+            body += `<tr class="bg-gray-50 font-bold">
+                <td class="px-3 py-2 text-right uppercase sticky-col">TOTAL ${isIncome ? 'INGRESOS' : 'GASTOS'}</td>
+                ${columnTotals.map((total, i) =>
+                    `<td class="px-3 py-2 whitespace-nowrap text-right text-sm ${isIncome ? 'text-green-800' : 'text-red-800'}">${formatCurrency(total)}</td>`
+                ).join('')}
+                <td class="px-3 py-2 whitespace-nowrap text-right text-sm ${isIncome ? 'text-green-900' : 'text-red-900'}">${formatCurrency(grandTotal)}</td>
+            </tr>`;
+            body += '</tbody>';
+            table.innerHTML = header + body;
+        }
+        async function processCategoriesGeneral() {
+            const loadingAlert = document.getElementById('loading-alert-general');
+            const errorAlert = document.getElementById('error-alert-general');
+            loadingAlert.classList.remove('hidden');
+            errorAlert.classList.add('hidden');
+            try {
+                const response = await fetch(CSV_URL);
+                if (!response.ok) throw new Error(`Error al cargar el archivo: ${response.statusText}`);
+                const tsvText = await response.text();
+                const cleanedTsvText = tsvText.trim().replace(/^\ufeff/, '');
+                const delimiter = detectDelimiter(cleanedTsvText);
+                const allRows = cleanedTsvText.split(/\r?\n/);
+                let headerRowIndex = -1;
+                let rawHeaders = [];
+                for (let i = 0; i < allRows.length; i++) {
+                    const rowText = allRows[i].trim();
+                    if (!rowText) continue;
+                    const potentialHeaders = rowText.split(delimiter).map(h => cleanTextForComparison(h));
+                    if (potentialHeaders.includes('total')) {
+                        headerRowIndex = i;
+                        rawHeaders = allRows[i].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
+                        break;
+                    }
+                }
+                if (headerRowIndex === -1)
+                    throw new Error("No se pudo localizar la fila de encabezados.");
+                let monthsNames = [];
+                let monthIndices = [];
+                for (let i = 0; i < rawHeaders.length; i++) {
+                    const cleanHeader = cleanTextForComparison(rawHeaders[i]);
+                    if (MONTH_NAMES.some(m => cleanHeader.startsWith(m))) {
+                        monthsNames.push(rawHeaders[i]);
+                        monthIndices.push(i); // CORREGIDO: usa el índice real del array
+                    }
+                }
+                const dataRows = allRows.slice(headerRowIndex + 1).filter(r => r.trim() !== '');
+                const incomeCategories = {};
+                const expenseCategories = {};
+                let mode = '';
+                for (let i = 0; i < dataRows.length; i++) {
+                    const values = dataRows[i].split(delimiter).map(v => v.trim().replace(/^"|"$/g, ''));
+                    if (values.length < 3) continue;
+                    const tipo = cleanTextForComparison(values[0]);
+                    const subcat = cleanTextForComparison(values[1]);
+                    if (values[1].trim().toUpperCase() === "RENTABILIDAD") break;
+                    if (subcat.includes('total')) continue;
+                    if (tipo.includes('ingresos') && !tipo.includes('gastos')) mode = 'ingresos';
+                    else if (tipo.includes('gastos')) mode = 'gastos';
+                    if (mode !== 'ingresos' && mode !== 'gastos') continue;
+                    const nombreCategoria = values[1] || "(Sin nombre)";
+                    // CORREGIDO: para cada mes, coge el dato exacto de esa columna
+                    let datosFila = monthIndices.map(j => parseAmount(values[j] || '0'));
+                    if (mode === 'ingresos') incomeCategories[nombreCategoria] = datosFila;
+                    if (mode === 'gastos') expenseCategories[nombreCategoria] = datosFila;
+                }
+                renderCategoryTable('income-category-table', incomeCategories, monthsNames, true);
+                renderCategoryTable('expense-category-table', expenseCategories, monthsNames, false);
+            } catch (e) {
+                document.getElementById('error-message-general').textContent = e.message;
+                errorAlert.classList.remove('hidden');
+            } finally {
+                document.getElementById('loading-alert-general').classList.add('hidden');
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchAndProcessData();
+            processCategoriesGeneral();
+            showTab('2025-General');
+        });
     </script>
 </body>
 </html>
