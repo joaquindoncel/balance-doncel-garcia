@@ -57,8 +57,8 @@
         <!-- NUEVO: pestaña BALANCE añadida la primera -->
         <div class="flex space-x-2 mb-8">
             <button id="tab-BALANCE" class="px-5 py-2 rounded-t-lg font-semibold border-b-2 border-gray-300 bg-gray-50 text-gray-600 focus:outline-none" onclick="showTab('BALANCE')">Balance</button>
-            <button id="tab-2025-General" class="px-5 py-2 rounded-t-lg font-semibold border-b-2 border-blue-500 bg-blue-100 text-blue-700 active-tab focus:outline-none" onclick="showTab('2025-General')">2025-General</button>
-            <button id="tab-2025-Categorías" class="px-5 py-2 rounded-t-lg font-semibold border-b-2 border-gray-300 bg-gray-50 text-gray-600 focus:outline-none" onclick="showTab('2025-Categorías')">2025-Categorías</button>
+            <button id="tab-2025-General" class="px-5 py-2 rounded-t-lg font-semibold border-b-2 border-blue-500 bg-blue-100 text-blue-700 active-tab focus:outline-none" onclick="showTab('2025-General')">General-25</button>
+            <button id="tab-2025-Categorías" class="px-5 py-2 rounded-t-lg font-semibold border-b-2 border-gray-300 bg-gray-50 text-gray-600 focus:outline-none" onclick="showTab('2025-Categorías')">Categorías-25</button>
         </div>
         <!-- NUEVO PANEL BALANCE -->
         <div id="tab-panel-BALANCE" class="tab-panel hidden">
@@ -102,7 +102,7 @@
                 <p id="error-message" class="text-sm">No se pudieron cargar o procesar los datos. Asegúrate de que las filas 'Ingresos' y 'Gastos' estén presentes.</p>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-lg">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Por cada mes 2025</h2>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Por mes 2025</h2>
                 <div class="overflow-x-auto">
                     <div id="transaction-list-body" class="max-h-96 overflow-y-auto">
                         <table class="min-w-full divide-y divide-gray-200">
@@ -291,7 +291,7 @@
                 const balanceClass = item.balance < 0 ? 'text-red-600 font-bold' : 'text-green-700 font-bold';
                 const row = `
                     <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${item.date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium uppercase">${item.date}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm ${balanceClass}">
                             ${formatCurrency(item.balance)}
                         </td>
@@ -530,7 +530,7 @@
                     
                     let importe = 0;
                     for (let c = 1; c < row.length; c++) {
-                        const valParsed = parseAmount(row[c]);
+                        const valParsed = parseAmount(row[2]);
                         if (valParsed !== 0) {
                             importe = valParsed;
                             break;
