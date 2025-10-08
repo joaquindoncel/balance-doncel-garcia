@@ -47,6 +47,30 @@
             z-index: 3;
             background: #f9fafb;
         }
+        
+        table th {
+            cursor: pointer;
+        }
+        
+        table .th-sort-asc::after {
+            content: "\25b4";
+        }
+        
+        table .th-sort-desc::after {
+            content: "\25be";
+        }
+        
+        table .th-sort-asc::after,
+        table .th-sort-desc::after {
+            margin-left: 5px;
+        }
+        
+        table .th-sort-asc,
+        table .th-sort-desc {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -71,16 +95,11 @@
                     <p class="text-sm font-medium text-gray-500 uppercase">SALDO TOTAL</p>
                     <p id="total-saldo" class="text-3xl font-bold text-green-600 mt-1">Cargando...</p>
                 </div>
-               
-             
             </div>
-               
-               
-               
                
                 <div class="overflow-x-auto ">
                    
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="table-sortable min-w-full divide-y divide-gray-200 ">
                         <thead class="bg-gray-50 sticky top-0">
                             <tr>
                                 <th class="px-6 py-3 text-left sticky-col sticky-pre text-xs font-medium  uppercase tracking-wider">Categoría</th>
@@ -121,7 +140,7 @@
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">Por mes 2025</h2>
                 <div class="overflow-x-auto">
                     <div id="transaction-list-body" >
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="table-sortable min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50 sticky top-0">
                                 <tr>
                                     <th class="px-6 py-3 sticky-col sticky-pre text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-xl">Mes</th>
@@ -553,12 +572,6 @@
                         }
                     }
                     if (cat && importe !== 0 && cat.toLowerCase().includes('total')) {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td class="px-6 py-4 sticky-col whitespace-nowrap text-sm text-green-800 font-bold bg-gray-50">${cat}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-green-800 font-bold bg-gray-50">${formatCurrency(importe)}</td>
-                        `;
-                        tbody.appendChild(tr);
                         document.getElementById('total-saldo').textContent = formatCurrency(importe);
                         
                     }
@@ -566,7 +579,7 @@
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td class="px-6 py-4 sticky-col whitespace-nowrap text-sm text-gray-900 font-medium">${cat}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold">${formatCurrency(importe)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-green-600">${formatCurrency(importe)}</td>
                         `;
                         tbody.appendChild(tr);
                     }
@@ -577,6 +590,73 @@
                 tbody.innerHTML = `<tr><td colspan="2" class="text-center text-red-600 font-semibold p-4">Error: ${e.message}</td></tr>`;
             }
         }
+        
+        
+        
+
+        /**
+         * Sorts a HTML table.
+         * 
+         * @param {HTMLTableElement} table The table to sort
+         * @param {number} column The index of the column to sort
+         * @param {boolean} asc Determines if the sorting will be in ascending
+         */
+        function sortTableByColumn(table, column, asc = true) {
+            const dirModifier = asc ? 1 : -1;
+            const tBody = table.tBodies[0];
+            const rows = Array.from(tBody.querySelectorAll("tr"));
+        
+            // Sort each row
+            const sortedRows = rows.sort((a, b) => {
+                const aColText = a.querySelector(`td:nth-child(${ column + 1 })`).textContent.trim();
+                const bColText = b.querySelector(`td:nth-child(${ column + 1 })`).textContent.trim();
+                
+                if (aColText && aColText.toLowerCase().includes('€')) {
+                     return convertirImporteANumero(aColText) > convertirImporteANumero(bColText) ? (1 * dirModifier) : (-1 * dirModifier);
+                } else {
+                    return aColText > bColText ? (1 * dirModifier) : (-1 * dirModifier);
+                }
+                
+                
+            });
+        
+            // Remove all existing TRs from the table
+            while (tBody.firstChild) {
+                tBody.removeChild(tBody.firstChild);
+            }
+        
+            // Re-add the newly sorted rows
+            tBody.append(...sortedRows);
+        
+            // Remember how the column is currently sorted
+            table.querySelectorAll("th").forEach(th => th.classList.remove("th-sort-asc", "th-sort-desc"));
+            table.querySelector(`th:nth-child(${ column + 1})`).classList.toggle("th-sort-asc", asc);
+            table.querySelector(`th:nth-child(${ column + 1})`).classList.toggle("th-sort-desc", !asc);
+        }
+        
+        document.querySelectorAll(".table-sortable th").forEach(headerCell => {
+            headerCell.addEventListener("click", () => {
+                const tableElement = headerCell.parentElement.parentElement.parentElement;
+                const headerIndex = Array.prototype.indexOf.call(headerCell.parentElement.children, headerCell);
+                const currentIsAscending = headerCell.classList.contains("th-sort-asc");
+        
+                sortTableByColumn(tableElement, headerIndex, !currentIsAscending);
+            });
+        });
+
+        function convertirImporteANumero(importeStr) {
+            // Elimina el símbolo del euro y los espacios en blanco
+            let limpio = importeStr.replace(/€/g, '').trim();
+            // Elimina los puntos de los miles
+            limpio = limpio.replace(/\./g, '');
+            // Reemplaza la coma decimal por un punto
+            limpio = limpio.replace(/,/g, '.');
+            // Convierte la cadena a un número de punto flotante
+            return parseFloat(limpio);
+        }
+
+
+
 
         document.addEventListener('DOMContentLoaded', function() {
             fetchAndProcessData();
